@@ -473,10 +473,33 @@ class Qwen2LM(TransformerLM):
     def inference_wrapper(self, lm_input, sampling, min_len, max_len, uuid):
         if hasattr(self, 'vllm'):
             from vllm import SamplingParams, RequestOutput
-            sampling_params = SamplingParams(top_k=sampling,
-                                             stop_token_ids=self.stop_token_ids,
-                                             min_tokens=min_len,
-                                             max_tokens=max_len)
+            sampling_params = SamplingParams(
+                temperature=0.0,                 # 关闭随机性
+                top_k=10,
+                repetition_penalty=1.2,          # 明显开启重复性惩罚
+                frequency_penalty=0.15,           # 抑制多次重复
+                presence_penalty=0.0,             # 语音场景不建议开
+                stop_token_ids=self.stop_token_ids,
+                min_tokens=min_len,
+                max_tokens=max_len,
+            )
+            default_params = SamplingParams()
+            YELLOW = "\033[33m"
+            RESET = "\033[0m"
+
+            logging.info(
+                "%s[vLLM SamplingParams DEFAULT]%s %s",
+                YELLOW,
+                RESET,
+                default_params
+            )
+
+            logging.info(
+                "%s[vLLM SamplingParams ACTUAL]%s %s",
+                YELLOW,
+                RESET,
+                sampling_params
+            )
             with self.lock:
                 self.vllm.add_request(uuid, {"prompt_embeds": lm_input.squeeze(0).to(torch.bfloat16).to(lm_input.device)}, sampling_params)
                 self.vllm_output_queue[uuid] = queue.Queue()
@@ -698,7 +721,7 @@ class CosyVoice3LM(Qwen2LM):
         lm_output, lm_output_mask = self.llm(lm_input, lm_input_len.to(device))
         logits = self.llm_decoder(lm_output)
         loss = self.criterion_ce(logits, lm_target.to(device))
-        acc = th_accuracy(logits.view(-1, self.speech_token_size + 200), lm_target, ignore_label=IGNORE_ID)
+        acc = th_accuracy(logits.view(-1, self.speech_token_size + 3), lm_target, ignore_label=IGNORE_ID)
         return {'loss': loss, 'acc': acc}
 
     @torch.inference_mode()
