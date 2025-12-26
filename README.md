@@ -8,7 +8,7 @@
 pip install -r requirements.txt
 ```
 
-![工程加速后的首帧延迟为300ms左右](CosyVoice/asset/45ac54851677b6eda72595e409eae2b7.png)
+![工程加速后的首帧延迟为300ms左右](asset/45ac54851677b6eda72595e409eae2b7.png)
 
 主要修改脚本见CosyVoice/cosyvoice/cli中
 
