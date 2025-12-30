@@ -1,4 +1,4 @@
-<img width="422" height="537" alt="image" src="https://github.com/user-attachments/assets/a1a147d8-758c-4592-be31-ff8d45248f2d" />## CosyVoice 3 工程加速
+## CosyVoice 3 工程加速
 
 模型按照官网准备
 
